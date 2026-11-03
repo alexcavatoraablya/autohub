@@ -13,7 +13,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
 
-        // CORS
+        // CORS - механізм безпеки (стандарт W3C), який дозволяє веб-серверу послабити «політику одного джерела»
         services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
