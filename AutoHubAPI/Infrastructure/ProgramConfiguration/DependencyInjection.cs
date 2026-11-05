@@ -1,9 +1,12 @@
 ﻿using Application.Interfaces;
 using Application.Repositories;
+using Application.Services;
 using Domain;
+using Infrastructure.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace Infrastructure.ProgramConfiguration;
 
@@ -27,6 +30,19 @@ public static class DependencyInjection
 
         // FluentValidation Global Configuration
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+        services.AddScoped<ISeederService, SeederService>();
+
+        // Quartz
+        services.AddQuartz(q =>
+        {
+            var migrationJobKey = new JobKey(nameof(DbSeedJob));
+            q.AddJob<DbSeedJob>(opts => opts.WithIdentity(migrationJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(migrationJobKey)
+                .WithIdentity("DbSeedJob-trigger")
+                .StartNow());
+        });
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
         services.AddDbContext<AppDbContext>(opt =>
             opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));

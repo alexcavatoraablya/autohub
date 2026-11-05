@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Entities.TestHub;
 using Microsoft.EntityFrameworkCore;
 
 namespace Domain;
@@ -19,4 +20,8 @@ public class AppDbContext : DbContext
     public DbSet<VehicleImageEntity> VehicleImages { get; set; }
     public DbSet<VehicleSpecificationEntity> VehicleSpecifications { get; set; }
     public DbSet<LeadEntity> Leads { get; set; }
+
+    public DbSet<TestEntity> Tests => Set<TestEntity>();
+    public DbSet<QuestionEntity> Questions => Set<QuestionEntity>();
+    public DbSet<AnswerOptionEntity> AnswerOptions => Set<AnswerOptionEntity>();
 }
