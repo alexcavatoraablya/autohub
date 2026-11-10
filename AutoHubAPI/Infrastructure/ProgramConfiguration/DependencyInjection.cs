@@ -1,4 +1,6 @@
-﻿using Application.Interfaces;
+﻿using Application.Inetrfaces;
+using Application.Inetrfaces.Services;
+using Application.Interfaces;
 using Application.Repositories;
 using Application.Services;
 using Domain;
@@ -31,6 +33,7 @@ public static class DependencyInjection
         // FluentValidation Global Configuration
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
         services.AddScoped<ISeederService, SeederService>();
+        services.AddScoped<ITestService, TestService>();
 
         // Quartz
         services.AddQuartz(q =>
