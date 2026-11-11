@@ -12,4 +12,7 @@ public record TestItemDto(
     string? Description,
     int? TimeLimitMinutes,
     DateTime CreatedAt,
-    int QuestionsCount);
+    int QuestionsCount)
+{
+    internal List<global::AutoHubAPI.Controllers.QuestionDto> Questions { get; public set; }
+}
