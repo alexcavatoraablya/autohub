@@ -8,55 +8,45 @@ namespace AutoHubAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class QuizzesController : ControllerBase
+public class QuizzesController(ITestService testService) : ControllerBase
 {
-    private readonly AppDbContext _context;
-
-    public QuizzesController(AppDbContext context)
-    {
-        _context = context;
-    }
-
-    // 1. Отримати список усіх тестів (без питань, суто для списку/меню)
+    /// <summary>Список усіх тестів у БД.</summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<object>>> GetTests()
+    [ProducesResponseType<IReadOnlyList<TestItemDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll()
     {
-        var quizzes = await _context.Tests
-            .Select(q => new { q.Id, q.Title, q.Description })
-            .ToListAsync();
-
-        return Ok(quizzes);
+        var tests = await testService.GetAllAsync();
+        return Ok(tests);
     }
 
-    // 2. Отримати конкретний тест з питаннями та варіантами для проходження
-    [HttpGet("{id}")]
-    public async Task<ActionResult<TestItemDto>> GetQuiz(int id)
+    /// <summary>Інформація про тест (кількість питань, максимальний бал, ліміт часу).</summary>
+    [HttpGet("{id:int}")]
+    [ProducesResponseType<TestInfoDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInfo(int id)
     {
-        var testDto = await _context.Tests
-            .Where(q => q.Id == id)
-            .Select(q => new TestItemDto
-            {
-                Id = q.Id,
-                Title = q.Title,
-                Description = q.Description,
-                Questions = q.Questions.Select(question => new QuestionDto
-                {
-                    Id = question.Id,
-                    Text = question.Text,
-                    AnswerOptions = question.AnswerOptions.Select(option => new AnswerOptionDto
-                    {
-                        Id = option.Id,
-                        Text = option.Text
-                    }).ToList()
-                }).ToList()
-            })
-            .FirstOrDefaultAsync();
+        var info = await testService.GetInfoAsync(id);
+        return info == null ? NotFound() : Ok(info);
+    }
 
-        if (testDto == null)
-        {
-            return NotFound(new { message = "Тест не знайдено" });
-        }
+    /// <summary>Питання тесту з варіантами відповідей для проходження (без правильних відповідей).</summary>
+    [HttpGet("{id:int}/pass")]
+    [ProducesResponseType<TestPassDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetForPassing(int id)
+    {
+        var test = await testService.GetForPassingAsync(id);
+        return test == null ? NotFound() : Ok(test);
+    }
 
-        return Ok(testDto);
+    /// <summary>Надіслати відповіді та отримати результат.</summary>
+    [HttpPost("{id:int}/submit")]
+    [ProducesResponseType<TestResultDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Submit(int id, [FromBody] TestSubmitRequest request)
+    {
+        var result = await testService.SubmitAsync(id, request);
+        return result == null ? NotFound() : Ok(result);
     }
 }

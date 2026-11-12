@@ -8,7 +8,5 @@
     public Task SeedVehiclesAsync();
     public Task SeedVehicleStatusesAsync();
 
-    public Task SeedTestsAsync();
-    public Task SeedQuestionsAsync();
-    public Task SeedAnswerOptionsAsync();
+    public Task SeedTestHubAsync();
 }
